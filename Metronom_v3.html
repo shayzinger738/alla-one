@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>Alla One Metronome</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0b0b0b">
+<link rel="manifest" href="manifest.json">
+
+<style>
+:root {
+  --primary: #ff9800;
+  --bg: #0b0b0b;
+  --card: #1a1a1a;
+}
+
+body {
+  margin:0;
+  background: var(--bg);
+  color:white;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  text-align:center;
+  padding: env(safe-area-inset-top) 10px calc(env(safe-area-inset-bottom) + 20px) 10px;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  overflow-x: hidden;
+}
+
+.display {
+  font-size: 25vw; /* גודל דינמי לפי רוחב המסך */
+  max-size: 120px;
+  font-weight: bold;
+  color: var(--primary);
+  text-shadow: 0 0 20px rgba(255, 152, 0, 0.3);
+  margin: 10px 0;
+}
+
+/* JOG WHEEL - RESPONSIVE */
+.wheel-container {
+  width: 70vw;
+  height: 70vw;
+  max-width: 280px;
+  max-height: 280px;
+  margin: 10px auto;
+  position: relative;
+  touch-action: none;
+}
+
+.wheel {
+  width:100%;
+  height:100%;
+  border-radius:50%;
+  border:10px solid #333;
+  background: radial-gradient(circle, #222 0%, #000 100%);
+  position: absolute;
+  top:0; left:0;
+  box-sizing: border-box;
+}
+
+.wheel-marker {
+    width: 24px;
+    height: 24px;
+    background: var(--primary);
+    border-radius: 50%;
+    position: absolute;
+    top: 12px;
+    left: calc(50% - 12px);
+    box-shadow: 0 0 15px var(--primary);
+}
+
+/* BUTTONS */
+.pad {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin: 15px 0;
+}
+
+button {
+  font-size: 18px;
+  padding: 12px 18px;
+  border: none;
+  border-radius: 12px;
+  background: #222;
+  color: white;
+  cursor: pointer;
+  flex: 1 1 20%; /* כפתורים גמישים */
+  min-width: 60px;
+}
+
+.tap-btn {
+    background: #333;
+    color: var(--primary);
+    border: 2px solid var(--primary);
+    font-size: 22px;
+    font-weight: bold;
+    padding: 18px;
+    width: 90%;
+    max-width: 300px;
+    margin: 10px auto;
+    border-radius: 15px;
+}
+
+.start {
+  font-size: 28px;
+  padding: 15px;
+  background: #00c853;
+  color: black;
+  font-weight: bold;
+  border-radius: 50px;
+  width: 90%;
+  max-width: 300px;
+  margin: 15px auto;
+}
+
+.start.stop { background: #ff1744; }
+
+/* TABLE OPTIMIZATION */
+.table-wrapper {
+    overflow-x: auto;
+    width: 100%;
+    margin-top: 20px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+td, th {
+  background: var(--card);
+  padding: 10px 5px;
+  border: 1px solid #333;
+}
+
+input {
+  width: 100%;
+  background: transparent;
+  color: white;
+  border: none;
+  text-align: center;
+  font-size: 14px;
+}
+
+.action-btns { display: flex; gap: 4px; justify-content: center; }
+.action-btns button { padding: 6px; font-size: 10px; flex: none; }
+
+.dot { width: 20px; height: 20px; border-radius: 50%; background: #333; }
+.red { background: #ff1744 !important; box-shadow: 0 0 10px #ff1744; }
+.green { background: #00ff88 !important; }
+
+</style>
+</head>
+
+<body>
+
+<div class="display" id="tempoDisplay">120</div>
+
+<div class="wheel-container">
+    <div class="wheel" id="wheel">
+        <div class="wheel-marker" id="marker"></div>
+    </div>
+</div>
+
+<button class="tap-btn" id="tapBtn">TAP TEMPO</button>
+
+<div class="pad">
+  <button onclick="changeTempo(-10)">-10</button>
+  <button onclick="changeTempo(-1)">-</button>
+  <button onclick="changeTempo(1)">+</button>
+  <button onclick="changeTempo(10)">+10</button>
+</div>
+
+<button id="startBtn" class="start" onclick="togglePlay()">START</button>
+
+<div style="margin: 10px 0;">
+  <label>משקל:</label>
+  <select id="timeSig" style="background:#222; color:white; padding:8px; border-radius:8px;" onchange="createDots()">
+    <option>2</option><option>3</option><option selected>4</option>
+    <option>5</option><option>6</option><option>7</option><option>8</option>
+  </select>
+</div>
+
+<div class="pad">
+  <button class="sub-btn active" onclick="updateSubdivision(1, this)">1/4</button>
+  <button class="sub-btn" onclick="updateSubdivision(2, this)">1/8</button>
+  <button class="sub-btn" onclick="updateSubdivision(3, this)">Tri</button>
+  <button class="sub-btn" onclick="updateSubdivision(4, this)">1/16</button>
+</div>
+
+<div class="pad">
+  <button class="sound-btn active" onclick="setSound('wood', this)">Wood</button>
+  <button class="sound-btn" onclick="setSound('sharp', this)">Sharp</button>
+</div>
+
+<div class="beats" id="beatsContainer" style="display:flex; justify-content:center; gap:10px; margin:15px;"></div>
+
+<hr style="border: 0.5px solid #333; margin: 30px 0;">
+
+<h3>יומן אימונים - Alla One</h3>
+<button onclick="addRudiment()">+ תרגיל חדש</button>
+
+<div class="table-wrapper">
+    <table id="table"></table>
+</div>
+
+<script>
+// הקוד הפונקציונלי נשאר זהה לגרסה 9.1 עם התאמות ל-UI החדש
+let audioCtx = null, tempo = 120, isPlaying = false, currentBeat = 0, subdivision = 1, soundType = "wood", nextNoteTime = 0.0, timerID = null, wakeLock = null;
+let dragging = false, lastAngle = 0, rotationAccumulator = 0, currentRotation = 0, tapTimes = [], selectedRudimentIndex = null, practiceInterval = null;
+
+const display = document.getElementById("tempoDisplay"), startBtn = document.getElementById("startBtn"), wheel = document.getElementById("wheel"), marker = document.getElementById("marker"), tapBtn = document.getElementById("tapBtn");
+
+function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+
+async function requestWakeLock() { try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (err) {} }
+function releaseWakeLock() { if (wakeLock) { wakeLock.release(); wakeLock = null; } }
+
+tapBtn.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    const now = performance.now();
+    if (tapTimes.length > 0 && now - tapTimes[tapTimes.length - 1] > 2000) tapTimes = [];
+    tapTimes.push(now);
+    if (tapTimes.length > 1) {
+        if (tapTimes.length > 4) tapTimes.shift();
+        let intervals = [];
+        for (let i = 1; i < tapTimes.length; i++) intervals.push(tapTimes[i] - tapTimes[i-1]);
+        tempo = Math.round(60000 / (intervals.reduce((a, b) => a + b) / intervals.length));
+        display.textContent = tempo;
+    }
+});
+
+function getAngle(x, y) {
+    const rect = wheel.getBoundingClientRect();
+    return Math.atan2(y - (rect.top + rect.height / 2), x - (rect.left + rect.width / 2)) * (180 / Math.PI);
+}
+
+wheel.addEventListener("pointerdown", (e) => { dragging = true; lastAngle = getAngle(e.clientX, e.clientY); wheel.setPointerCapture(e.pointerId); });
+wheel.addEventListener("pointermove", (e) => {
+    if (!dragging) return;
+    const currentAngle = getAngle(e.clientX, e.clientY);
+    let delta = currentAngle - lastAngle;
+    if (delta > 180) delta -= 360; if (delta < -180) delta += 360;
+    rotationAccumulator += delta; currentRotation += delta;
+    if (Math.abs(rotationAccumulator) >= 12) {
+        let change = Math.floor(rotationAccumulator / 12);
+        tempo = Math.min(280, Math.max(40, tempo + change));
+        display.textContent = tempo;
+        rotationAccumulator -= (change * 12);
+    }
+    marker.style.transform = `rotate(${currentRotation}deg)`;
+    marker.style.transformOrigin = `50% ${wheel.offsetWidth/2 - 12}px`;
+    lastAngle = currentAngle;
+});
+wheel.addEventListener("pointerup", () => dragging = false);
+
+function changeTempo(d) { tempo = Math.min(280, Math.max(40, tempo + d)); display.textContent = tempo; }
+
+function createDots() {
+    const container = document.getElementById("beatsContainer");
+    container.innerHTML = "";
+    for (let i = 0; i < parseInt(document.getElementById("timeSig").value); i++) {
+        const d = document.createElement("div"); d.className = "dot"; d.id = `d${i}`; container.appendChild(d);
+    }
+}
+
+function scheduler() {
+    while (nextNoteTime < audioCtx.currentTime + 0.1) {
+        const isMain = currentBeat % subdivision === 0;
+        const ts = parseInt(document.getElementById("timeSig").value);
+        const osc = audioCtx.createOscillator();
+        const env = audioCtx.createGain();
+        let freq = soundType === "wood" ? 800 : 2000;
+        if (isMain) {
+            if ((currentBeat / subdivision) % ts === 0) freq *= 1.5;
+            env.gain.setValueAtTime(1, nextNoteTime);
+            const visualBeat = (currentBeat / subdivision) % ts;
+            setTimeout(() => {
+                document.querySelectorAll(".dot").forEach(d => d.classList.remove("red", "green"));
+                const active = document.getElementById(`d${visualBeat}`);
+                if (active) active.classList.add(visualBeat === 0 ? "red" : "green");
+            }, (nextNoteTime - audioCtx.currentTime) * 1000);
+        } else {
+            freq *= 0.6; env.gain.setValueAtTime(0.3, nextNoteTime);
+        }
+        osc.frequency.value = freq;
+        env.gain.exponentialRampToValueAtTime(0.001, nextNoteTime + 0.04);
+        osc.connect(env); env.connect(audioCtx.destination);
+        osc.start(nextNoteTime); osc.stop(nextNoteTime + 0.05);
+        nextNoteTime += (60.0 / tempo) / subdivision;
+        currentBeat++;
+    }
+}
+
+function togglePlay() {
+    initAudio();
+    if (!isPlaying) {
+        currentBeat = 0; nextNoteTime = audioCtx.currentTime;
+        timerID = setInterval(scheduler, 25);
+        startBtn.textContent = "STOP"; startBtn.classList.add("stop");
+        requestWakeLock(); startPracticeTimer();
+    } else {
+        clearInterval(timerID);
+        startBtn.textContent = "START"; startBtn.classList.remove("stop");
+        releaseWakeLock(); stopPracticeTimer();
+    }
+    isPlaying = !isPlaying;
+}
+
+let rudiments = JSON.parse(localStorage.getItem("rudiments") || "[]");
+function save() { localStorage.setItem("rudiments", JSON.stringify(rudiments)); }
+function renderTable() {
+    const t = document.getElementById("table");
+    t.innerHTML = `<tr><th>שם</th><th>BPM</th><th>זמן</th><th>פעולות</th></tr>`;
+    rudiments.forEach((r, i) => {
+        const tr = document.createElement("tr");
+        if (i === selectedRudimentIndex) tr.classList.add("selected");
+        tr.innerHTML = `
+            <td><input value="${r.name}" onchange="rudiments[${i}].name=this.value;save()"></td>
+            <td><button style="padding:5px" onclick="selectedRudimentIndex=${i};tempo=${r.bpm};display.textContent=tempo;renderTable()">${r.bpm}</button></td>
+            <td>${Math.floor(r.time/60)}:${(r.time%60).toString().padStart(2,'0')}</td>
+            <td class="action-btns">
+                <button class="save-btn" onclick="rudiments[${i}].bpm=tempo;save();renderTable()">Save</button>
+                <button class="reset-btn" onclick="rudiments[${i}].time=0;save();renderTable()">0</button>
+                <button class="delete-btn" onclick="rudiments.splice(${i},1);save();renderTable()">X</button>
+            </td>`;
+        t.appendChild(tr);
+    });
+}
+function addRudiment() { rudiments.push({ name: "תרגיל", bpm: tempo, time: 0 }); save(); renderTable(); }
+function startPracticeTimer() {
+    if (selectedRudimentIndex === null) return;
+    practiceInterval = setInterval(() => { rudiments[selectedRudimentIndex].time++; save(); renderTable(); }, 1000);
+}
+function stopPracticeTimer() { clearInterval(practiceInterval); }
+function updateSubdivision(v, btn) {
+    subdivision = v; document.querySelectorAll(".sub-btn").forEach(b => b.classList.remove("active")); btn.classList.add("active");
+}
+function setSound(s, btn) {
+    soundType = s; document.querySelectorAll(".sound-btn").forEach(b => b.classList.remove("active")); btn.classList.add("active");
+}
+
+createDots(); renderTable();
+</script>
+
+</body>
+</html>
