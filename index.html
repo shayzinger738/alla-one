@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="he" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
 <meta charset="UTF-8">
 <title>Alla One - Metronome</title>
@@ -19,7 +19,7 @@ body {
   overflow-x: hidden; -webkit-tap-highlight-color: transparent;
 }
 
-/* Header הקצבים שתמיד צף */
+/* Floating Header */
 .sticky-header {
   position: sticky; top: 0; background: var(--bg);
   z-index: 100; padding: 10px; border-bottom: 1px solid #333;
@@ -32,7 +32,7 @@ body {
 .red { background: #ff1744 !important; box-shadow: 0 0 10px #ff1744; transform: scale(1.2); }
 .green { background: #00ff88 !important; transform: scale(1.1); }
 
-/* Slider במקום גלגל */
+/* Horizontal Slider */
 .slider-container { padding: 20px; }
 input[type=range] {
   width: 100%; -webkit-appearance: none; background: #333;
@@ -43,7 +43,7 @@ input[type=range]::-webkit-slider-thumb {
   background: var(--primary); border-radius: 50%; cursor: pointer;
 }
 
-/* כפתורים קטנים ונוחים */
+/* Controls Grid */
 .controls-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 15px; }
 button {
   background: #222; color: white; border: none; padding: 12px;
@@ -52,13 +52,13 @@ button {
 button.active { background: var(--primary) !important; color: black !important; font-weight: bold; }
 
 .tap-btn { font-size: 14px; background: #333; color: var(--primary); border: 1px solid var(--primary); }
-.start-btn { grid-column: span 2; font-size: 24px; background: #00c853; color: black; font-weight: bold; }
+.start-btn { grid-column: span 2; font-size: 24px; background: #00c853; color: black; font-weight: bold; margin-top: 5px; }
 .start-btn.stop { background: #ff1744; }
 
-/* טבלת תרגילים כרטיסים */
+/* Exercise Cards */
 .exercise-card {
   background: var(--card); margin: 15px; padding: 15px;
-  border-radius: 12px; text-align: right; border: 1px solid #333;
+  border-radius: 12px; text-align: left; border: 1px solid #333;
 }
 .exercise-card.selected { border-color: var(--primary); box-shadow: 0 0 10px rgba(255, 152, 0, 0.2); }
 .card-title { font-size: 18px; font-weight: bold; width: 100%; background: transparent; color: white; border: none; border-bottom: 1px solid #444; margin-bottom: 10px; }
@@ -66,9 +66,11 @@ button.active { background: var(--primary) !important; color: black !important; 
 .time-display { font-family: monospace; font-size: 18px; color: #aaa; }
 
 .btn-group { display: flex; gap: 5px; }
-.btn-small { padding: 8px; font-size: 12px; flex: 1; }
-.btn-save { background: var(--primary); color: black; }
+.btn-small { padding: 8px; font-size: 11px; flex: 1; text-transform: uppercase; }
+.btn-save { background: var(--primary); color: black; font-weight: bold; }
 .btn-reset { background: #444; }
+
+label { font-size: 12px; color: #888; text-transform: uppercase; display: block; margin-bottom: 5px; }
 
 </style>
 </head>
@@ -81,25 +83,36 @@ button.active { background: var(--primary) !important; color: black !important; 
 
 <div class="slider-container">
     <input type="range" id="tempoSlider" min="40" max="280" value="120" oninput="updateFromSlider(this.value)">
-    <div style="display:flex; justify-content: space-between; color: #666; font-size: 12px; margin-top: 5px;">
-        <span>40</span><span>160</span><span>280</span>
+    <div style="display:flex; justify-content: space-between; color: #666; font-size: 10px; margin-top: 5px;">
+        <span>40 BPM</span><span>160</span><span>280 BPM</span>
     </div>
 </div>
 
 <div class="controls-grid">
-    <button id="tapBtn" class="tap-btn">TAP</button>
-    <select id="timeSig" style="background:#222; color:white; border-radius:8px; padding:10px;" onchange="createDots()">
-        <option value="2">2/4</option><option value="3">3/4</option><option value="4" selected>4/4</option>
-        <option value="5">5/4</option><option value="6">6/4</option>
-    </select>
+    <div style="text-align: left;">
+        <label>Time Sig</label>
+        <select id="timeSig" style="width:100%; background:#222; color:white; border-radius:8px; padding:11px; border:none;" onchange="createDots()">
+            <option value="2">2/4</option><option value="3">3/4</option><option value="4" selected>4/4</option>
+            <option value="5">5/4</option><option value="6">6/4</option>
+        </select>
+    </div>
     
-    <button class="sub-btn active" onclick="setSub(1, this)">1/4</button>
-    <button class="sub-btn" onclick="setSub(2, this)">1/8</button>
-    <button class="sub-btn" onclick="setSub(3, this)">Tri</button>
-    <button class="sub-btn" onclick="setSub(4, this)">1/16</button>
+    <div style="text-align: left;">
+        <label>Sync</label>
+        <button id="tapBtn" style="width:100%;" class="tap-btn">TAP TEMPO</button>
+    </div>
+    
+    <div style="grid-column: span 2; display: flex; gap: 5px; margin-top: 5px;">
+        <button class="sub-btn active" style="flex:1" onclick="setSub(1, this)">1/4</button>
+        <button class="sub-btn" style="flex:1" onclick="setSub(2, this)">1/8</button>
+        <button class="sub-btn" style="flex:1" onclick="setSub(3, this)">TRI</button>
+        <button class="sub-btn" style="flex:1" onclick="setSub(4, this)">1/16</button>
+    </div>
 
-    <button class="sound-btn active" onclick="setSnd('wood', this)">Wood</button>
-    <button class="sound-btn" onclick="setSnd('sharp', this)">Sharp</button>
+    <div style="grid-column: span 2; display: flex; gap: 5px;">
+        <button class="sound-btn active" style="flex:1" onclick="setSnd('wood', this)">WOOD</button>
+        <button class="sound-btn" style="flex:1" onclick="setSnd('sharp', this)">SHARP</button>
+    </div>
 
     <button id="startBtn" class="start-btn" onclick="togglePlay()">START</button>
 </div>
@@ -107,7 +120,8 @@ button.active { background: var(--primary) !important; color: black !important; 
 <hr style="border:0; border-top:1px solid #333; margin:25px 0;">
 
 <div style="padding: 0 15px;">
-    <button style="width:100%; background: var(--primary); color: black; font-weight: bold;" onclick="addExercise()">+ הוסף תרגיל חדש</button>
+    <h3 style="text-align: left; font-size: 14px; color: #888; text-transform: uppercase;">Practice Tracker</h3>
+    <button style="width:100%; background: var(--primary); color: black; font-weight: bold;" onclick="addExercise()">+ ADD NEW EXERCISE</button>
 </div>
 
 <div id="exerciseList"></div>
@@ -144,26 +158,41 @@ function createDots() {
     }
 }
 
+function scheduleNote(beatNumber, time) {
+    const isMain = beatNumber % subdivision === 0;
+    const ts = parseInt(document.getElementById("timeSig").value);
+    
+    const osc = audioCtx.createOscillator();
+    const env = audioCtx.createGain();
+    
+    let freq = soundType === "wood" ? 800 : 2000;
+
+    if (isMain) {
+        // Main Beat (Accent on 1)
+        if ((beatNumber / subdivision) % ts === 0) freq *= 1.5;
+        env.gain.setValueAtTime(1, time);
+        
+        const visualBeat = (beatNumber / subdivision) % ts;
+        setTimeout(() => {
+            document.querySelectorAll(".dot").forEach(d => d.classList.remove("red", "green"));
+            const active = document.getElementById(`d${visualBeat}`);
+            if (active) active.classList.add(visualBeat === 0 ? "red" : "green");
+        }, (time - audioCtx.currentTime) * 1000);
+    } else {
+        // Subdivision (Quieter & Lower)
+        freq *= 0.6;
+        env.gain.setValueAtTime(0.3, time);
+    }
+
+    osc.frequency.value = freq;
+    env.gain.exponentialRampToValueAtTime(0.001, time + 0.05);
+    osc.connect(env); env.connect(audioCtx.destination);
+    osc.start(time); osc.stop(time + 0.06);
+}
+
 function scheduler() {
     while (nextNoteTime < audioCtx.currentTime + 0.1) {
-        const isMain = currentBeat % subdivision === 0;
-        const ts = parseInt(document.getElementById("timeSig").value);
-        if (isMain) {
-            const osc = audioCtx.createOscillator(); const env = audioCtx.createGain();
-            let freq = soundType === "wood" ? 800 : 2000;
-            if ((currentBeat / subdivision) % ts === 0) freq *= 1.5;
-            env.gain.setValueAtTime(1, nextNoteTime);
-            env.gain.exponentialRampToValueAtTime(0.001, nextNoteTime + 0.05);
-            osc.frequency.value = freq; osc.connect(env); env.connect(audioCtx.destination);
-            osc.start(nextNoteTime); osc.stop(nextNoteTime + 0.06);
-            
-            const visualBeat = (currentBeat / subdivision) % ts;
-            setTimeout(() => {
-                document.querySelectorAll(".dot").forEach(d => d.classList.remove("red", "green"));
-                const active = document.getElementById(`d${visualBeat}`);
-                if (active) active.classList.add(visualBeat === 0 ? "red" : "green");
-            }, (nextNoteTime - audioCtx.currentTime) * 1000);
-        }
+        scheduleNote(currentBeat, nextNoteTime);
         nextNoteTime += (60.0 / tempo) / subdivision;
         currentBeat++;
     }
@@ -184,7 +213,7 @@ function togglePlay() {
     isPlaying = !isPlaying;
 }
 
-/* Exercises */
+/* Exercises Management */
 let exercises = JSON.parse(localStorage.getItem("allaOne_ex") || "[]");
 function save() { localStorage.setItem("allaOne_ex", JSON.stringify(exercises)); }
 
@@ -200,9 +229,9 @@ function render() {
                 <div style="font-weight:bold; color:var(--primary)">${ex.bpm} BPM</div>
             </div>
             <div class="btn-group" style="margin-top:15px">
-                <button class="btn-small" onclick="selectEx(${i})">בחר</button>
-                <button class="btn-small btn-save" onclick="exercises[${i}].bpm=tempo;save();render()">שמור BPM</button>
-                <button class="btn-small btn-reset" onclick="exercises[${i}].time=0;save();render()">איפוס זמן</button>
+                <button class="btn-small" onclick="selectEx(${i})">Select</button>
+                <button class="btn-small btn-save" onclick="exercises[${i}].bpm=tempo;save();render()">Save BPM</button>
+                <button class="btn-small btn-reset" onclick="exercises[${i}].time=0;save();render()">Reset Time</button>
                 <button class="btn-small" style="background:#721c24" onclick="exercises.splice(${i},1);save();render()">X</button>
             </div>`;
         list.appendChild(div);
@@ -210,7 +239,7 @@ function render() {
 }
 
 function selectEx(i) { selectedIdx = i; tempo = exercises[i].bpm; display.textContent = tempo; slider.value = tempo; render(); }
-function addExercise() { exercises.push({ name: "תרגיל חדש", bpm: tempo, time: 0 }); save(); render(); }
+function addExercise() { exercises.push({ name: "New Exercise", bpm: tempo, time: 0 }); save(); render(); }
 function startTimer() { if (selectedIdx !== null) practiceInterval = setInterval(() => { exercises[selectedIdx].time++; save(); render(); }, 1000); }
 function stopTimer() { clearInterval(practiceInterval); }
 
